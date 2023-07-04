@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Border xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+        x:Class="The49.Maui.Toolkit.Sample.Views.PostCard"
+        x:Name="this"
+        Stroke="LightGray"
+        StrokeThickness="1"
+        Padding="16"
+        Background="White">
+    <Border.StrokeShape>
+        <RoundRectangle CornerRadius="16" />
+    </Border.StrokeShape>
+    <Border.Resources>
+        <Style TargetType="Label">
+            <Setter Property="TextColor" Value="DarkSlateBlue" />
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+    </Border.Resources>
+    <VerticalStackLayout BindingContext="{x:Reference this}" Spacing="16">
+        <Grid ColumnDefinitions="32, *, 24">
+            <Image Source="{Binding AvatarUrl}" VerticalOptions="Center" HeightRequest="32" WidthRequest="32" />
+            <Label Text="{Binding UserName}" Grid.Column="1" VerticalOptions="Center" />
+            <Button ImageSource="more.png" Padding="0" Grid.Column="2" HeightRequest="24" />
+        </Grid>
+        <Label Text="{Binding Text}" FontSize="18" />
+    </VerticalStackLayout>
+</Border>
