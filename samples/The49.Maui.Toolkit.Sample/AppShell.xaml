@@ -15,6 +15,7 @@
 
     <ShellContent Title="OnClick" ContentTemplate="{DataTemplate pages:OnClickPage}" />
     <ShellContent Title="CollectionViewDefault" ContentTemplate="{DataTemplate pages:CollectionViewDefault}" />
+    <ShellContent Title="CollectionViewGrouped" ContentTemplate="{DataTemplate pages:CollectionViewGrouped}" />
 
 
 </Shell>

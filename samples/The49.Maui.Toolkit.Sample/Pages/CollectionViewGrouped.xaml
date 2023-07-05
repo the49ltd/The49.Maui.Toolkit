@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:the49="https://schemas.the49.com/dotnet/2023/maui"
+             xmlns:views="clr-namespace:The49.Maui.Toolkit.Sample.Views"
+             xmlns:models="clr-namespace:The49.Maui.Toolkit.Sample.Models"
+             x:Class="The49.Maui.Toolkit.Sample.Pages.CollectionViewGrouped"
+             Title="CollectionViewGrouped"
+             x:Name="this">
+    <ContentPage.Resources>
+        <Style TargetType="Border">
+            <Setter Property="StrokeThickness" Value="1" />
+            <Setter Property="Stroke" Value="LightGray" />
+            <Setter Property="Padding" Value="32, 16" />
+            <Setter Property="StrokeShape">
+                <RoundRectangle CornerRadius="6" />
+            </Setter>
+        </Style>
+        <Style TargetType="Label">
+            <Setter Property="FontSize" Value="16" />
+        </Style>
+    </ContentPage.Resources>
+    <the49:CollectionView ItemsSource="{Binding Comments, Source={x:Reference this}}" IsGrouped="True">
+        <the49:CollectionView.ItemsLayout>
+            <LinearItemsLayout Orientation="Vertical" ItemSpacing="12" />
+        </the49:CollectionView.ItemsLayout>
+        <the49:CollectionView.GroupHeaderTemplate>
+            <DataTemplate x:DataType="models:CommentThread">
+                <views:CommentCard Comment="{Binding Comment}" />
+            </DataTemplate>
+        </the49:CollectionView.GroupHeaderTemplate>
+        <the49:CollectionView.ItemTemplate>
+            <DataTemplate x:DataType="models:Comment">
+                <views:CommentCard Comment="{Binding .}" Margin="32, 0, 0, 0" />
+            </DataTemplate>
+        </the49:CollectionView.ItemTemplate>
+    </the49:CollectionView>
+</ContentPage>

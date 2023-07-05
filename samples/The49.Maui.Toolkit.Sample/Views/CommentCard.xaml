@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Grid xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+      xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+      x:Class="The49.Maui.Toolkit.Sample.Views.CommentCard"
+      ColumnDefinitions="24, *"
+      ColumnSpacing="8"
+      RowSpacing="8"
+      RowDefinitions="Auto, Auto, Auto"
+      Padding="8"
+      x:Name="this">
+    <Image Source="{Binding Comment.AvatarUrl, Source={x:Reference this}}" HeightRequest="24" WidthRequest="24" Grid.RowSpan="3" VerticalOptions="Start" />
+    <Label Text="{Binding Comment.UserName, Source={x:Reference this}}" Grid.Column="1" />
+    <Label Text="{Binding Comment.Text, Source={x:Reference this}}" Grid.Column="1" Grid.Row="1" />
+</Grid>
