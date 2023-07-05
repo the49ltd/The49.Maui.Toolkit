@@ -1,5 +1,6 @@
 ﻿[assembly: XmlnsDefinition("https://schemas.the49.com/dotnet/2023/maui", "The49.Maui.Toolkit")]
 [assembly: XmlnsDefinition("https://schemas.the49.com/dotnet/2023/maui", "The49.Maui.Toolkit.Views")]
+[assembly: XmlnsDefinition("https://schemas.the49.com/dotnet/2023/maui", "The49.Maui.Toolkit.Dialogs")]
 
 namespace The49.Maui.Toolkit;
 
