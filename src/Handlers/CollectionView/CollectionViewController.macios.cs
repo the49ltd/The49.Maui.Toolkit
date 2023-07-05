@@ -21,9 +21,14 @@ public class CollectionViewController : UICollectionViewController
     DataTemplate _headerViewTemplate;
     DataTemplate _headerStringTemplate;
 
+    DataTemplate _footerViewTemplate;
+    DataTemplate _footerStringTemplate;
+
     // TODO: dynamic generation based on seen templates
     string headerReuseId = "header";
     string footerReuseId = "footer";
+    string sectionHeaderReuseId = "sectionHeader";
+    string sectionFooterReuseId = "sectionFooter";
 
     int _counter = 0;
     View _emptyView;
@@ -34,6 +39,7 @@ public class CollectionViewController : UICollectionViewController
     bool _isEmpty = true;
     bool _initialized;
     CGSize _headerSize = CGSize.Empty;
+    CGSize _footerSize = CGSize.Empty;
 
     protected float PreviousHorizontalOffset, PreviousVerticalOffset;
 
@@ -44,6 +50,9 @@ public class CollectionViewController : UICollectionViewController
 
         _headerViewTemplate = new DataTemplate(() => (View)VirtualView.Header);
         _headerStringTemplate = new DataTemplate(() => new Label { Text = (string)VirtualView.Header });
+
+        _footerViewTemplate = new DataTemplate(() => (View)VirtualView.Footer);
+        _footerStringTemplate = new DataTemplate(() => new Label { Text = (string)VirtualView.Footer });
     }
 
     public override nint GetItemsCount(UICollectionView collectionView, nint section)
@@ -59,7 +68,13 @@ public class CollectionViewController : UICollectionViewController
 
     public override nint NumberOfSections(UICollectionView collectionView)
     {
-        return 1;
+        if (!_initialized)
+        {
+            return 0;
+        }
+        CheckForEmptySource();
+
+        return ItemsSource.GroupCount;
     }
 
     public override void ViewDidLoad()
@@ -78,6 +93,8 @@ public class CollectionViewController : UICollectionViewController
         }
         CollectionView.RegisterClassForSupplementaryView(typeof(CollectionViewHeader), UICollectionElementKindSection.Header, headerReuseId);
         CollectionView.RegisterClassForSupplementaryView(typeof(CollectionViewFooter), UICollectionElementKindSection.Footer, footerReuseId);
+        CollectionView.RegisterClassForSupplementaryView(typeof(CollectionViewSectionHeader), UICollectionElementKindSection.Header, sectionHeaderReuseId);
+        CollectionView.RegisterClassForSupplementaryView(typeof(CollectionViewSectionFooter), UICollectionElementKindSection.Footer, sectionFooterReuseId);
         CollectionView.CollectionViewLayout = _layout;
 
         _initialized = true;
@@ -87,6 +104,12 @@ public class CollectionViewController : UICollectionViewController
     public void SetHeaderSize(CGSize size)
     {
         _headerSize = size;
+        LayoutEmptyView();
+    }
+
+    public void SetFooterSize(CGSize size)
+    {
+        _footerSize = size;
         LayoutEmptyView();
     }
 
@@ -109,6 +132,11 @@ public class CollectionViewController : UICollectionViewController
         if (VirtualView.ItemsSource == null)
         {
             return new EmptySource();
+        }
+
+        if (VirtualView.IsGrouped)
+        {
+            return new ObservableGroupedSource(VirtualView.ItemsSource, this);
         }
 
         switch (VirtualView.ItemsSource)
@@ -144,6 +172,16 @@ public class CollectionViewController : UICollectionViewController
         return ResolveTemplate(VirtualView.ItemTemplate, item, VirtualView);
     }
 
+    DataTemplate GetSectionHeaderTemplate(object item)
+    {
+        return ResolveTemplate(VirtualView.GroupHeaderTemplate, item, VirtualView);
+    }
+
+    DataTemplate GetSectionFooterTemplate(object item)
+    {
+        return ResolveTemplate(VirtualView.GroupFooterTemplate, item, VirtualView);
+    }
+
     DataTemplate GetHeaderTemplate()
     {
         if (VirtualView.Header is View)
@@ -160,6 +198,14 @@ public class CollectionViewController : UICollectionViewController
 
     DataTemplate GetFooterTemplate()
     {
+        if (VirtualView.Footer is View)
+        {
+            return _footerViewTemplate;
+        }
+        else if (VirtualView.Footer is string)
+        {
+            return _footerStringTemplate;
+        }
         return ResolveTemplate(VirtualView.FooterTemplate, VirtualView.Footer, VirtualView);
     }
 
@@ -210,34 +256,90 @@ public class CollectionViewController : UICollectionViewController
         return new VerticalCellSizeController();
     }
 
+    void SetupSupplementaryElementCell(CollectionViewCell cell, DataTemplate template, object item)
+    {
+        if (cell.CellSizeController is null)
+        {
+            cell.CellSizeController = CreateCellSizeController();
+        }
+        cell.CellSizeChanged -= SupplementaryElementSizeChanged;
+
+        cell.Bind(template, item, VirtualView);
+
+        cell.CellSizeChanged += SupplementaryElementSizeChanged;
+    }
+
     public override UICollectionReusableView GetViewForSupplementaryElement(UICollectionView collectionView, NSString elementKind, NSIndexPath indexPath)
     {
-        if (elementKind == UICollectionElementKindSectionKey.Header)
+        if (indexPath.Length == 1)
         {
-            var template = GetHeaderTemplate();
-            var headerView = collectionView.DequeueReusableSupplementaryView(UICollectionElementKindSection.Header, headerReuseId, indexPath) as CollectionViewHeader;
-
-            if (headerView.CellSizeController is null)
+            if (elementKind == UICollectionElementKindSectionKey.Header)
             {
-                headerView.CellSizeController = CreateCellSizeController();
+                var template = GetHeaderTemplate();
+                var headerView = collectionView.DequeueReusableSupplementaryView(UICollectionElementKindSection.Header, headerReuseId, indexPath) as CollectionViewHeader;
+
+                SetupSupplementaryElementCell(headerView,template, VirtualView.Header);
+
+                return headerView;
             }
-            headerView.CellSizeChanged -= HeaderViewSizeChanged;
+            else if (elementKind == UICollectionElementKindSectionKey.Footer)
+            {
+                var template = GetFooterTemplate();
+                var footerView = collectionView.DequeueReusableSupplementaryView(UICollectionElementKindSection.Footer, footerReuseId, indexPath) as CollectionViewFooter;
 
-            headerView.Bind(template, VirtualView.Header, VirtualView);
+                SetupSupplementaryElementCell(footerView, template, VirtualView.Footer);
 
-            headerView.CellSizeChanged += HeaderViewSizeChanged;
+                return footerView;
+            }
+        }
+        else if (indexPath.Length == 2)
+        {
+            if (elementKind == UICollectionElementKindSectionKey.Header)
+            {
+                var item = ItemsSource.Group(indexPath);
+                var template = GetSectionHeaderTemplate(item);
+                var sectionHeaderView = collectionView.DequeueReusableSupplementaryView(UICollectionElementKindSectionKey.Header, sectionHeaderReuseId, indexPath) as CollectionViewSectionHeader;
 
-            return headerView;
+                SetupSupplementaryElementCell(sectionHeaderView, template, item);
+
+                return sectionHeaderView;
+            } else if (elementKind == UICollectionElementKindSectionKey.Footer)
+            {
+                var item = ItemsSource.Group(indexPath);
+                var template = GetSectionFooterTemplate(item);
+                var sectionFooterView = collectionView.DequeueReusableSupplementaryView(UICollectionElementKindSectionKey.Footer, sectionFooterReuseId, indexPath) as CollectionViewSectionFooter;
+
+                SetupSupplementaryElementCell(sectionFooterView, template, item);
+
+                return sectionFooterView;
+            }
         }
 
         return null;
     }
 
-    private void HeaderViewSizeChanged(object sender, View e)
+    private void SupplementaryElementSizeChanged(object sender, View e)
     {
+        if (sender is not UICollectionViewCell cell)
+        {
+            return;
+        }
+        var indexPath = CollectionView.IndexPathForCell(cell);
+
+        var kind = GetKindForCell(cell);
+
         var ctx = new UICollectionViewLayoutInvalidationContext();
-        ctx.InvalidateSupplementaryElements(UICollectionElementKindSectionKey.Header, new NSIndexPath[] { NSIndexPath.FromIndex(0) });
+        ctx.InvalidateSupplementaryElements(kind, new NSIndexPath[] { indexPath });
         _layout.InvalidateLayout(ctx);
+    }
+
+    NSString GetKindForCell(UICollectionViewCell cell)
+    {
+        if (cell is CollectionViewHeader || cell is CollectionViewSectionHeader)
+        {
+            return UICollectionElementKindSectionKey.Header;
+        }
+        return UICollectionElementKindSectionKey.Footer;
     }
 
     void CellSizeChanged(object sender, View e)
@@ -426,7 +528,7 @@ public class CollectionViewController : UICollectionViewController
     {
         nfloat headerHeight = _headerSize.Height;
 
-        nfloat footerHeight = 0;
+        nfloat footerHeight = _footerSize.Height;
         
         return new CGRect(CollectionView.Frame.X, CollectionView.Frame.Y + headerHeight, CollectionView.Frame.Width,
             Math.Abs(CollectionView.Frame.Height - (headerHeight + footerHeight)));

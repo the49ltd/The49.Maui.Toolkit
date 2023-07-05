@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows.Input;
 using The49.Maui.Toolkit.Sample.Models;
 
 namespace The49.Maui.Toolkit.Sample.Pages;
@@ -17,12 +18,10 @@ public partial class CollectionViewGrouped : ContentPage
     {
         base.OnAppearing();
 
-        var t1 = new CommentThread
-        {
-            Comment = new Comment { UserName = "@NuthinButNet", Text = "Commenting", AvatarUrl = "user.png" },
-        };
+        var t1 = new CommentThread(new List<Comment> { });
+        t1.Comment = new Comment { UserName = "@NuthinButNet", Text = "Commenting", AvatarUrl = "user.png" };
 
-        var t2 = new CommentThread
+        var t2 = new CommentThread(new List<Comment>
         {
             new Comment { UserName = "@NuthinButNet", Text = "Commenting", AvatarUrl = "user.png" },
             new Comment { UserName = "@NuthinButNet", Text = "Commenting", AvatarUrl = "user.png" },
@@ -30,7 +29,7 @@ public partial class CollectionViewGrouped : ContentPage
             new Comment { UserName = "@NuthinButNet", Text = "Commenting", AvatarUrl = "user.png" },
             new Comment { UserName = "@NuthinButNet", Text = "Commenting", AvatarUrl = "user.png" },
             new Comment { UserName = "@NuthinButNet", Text = "Commenting", AvatarUrl = "user.png" },
-        };
+        });
 
         t2.Comment = new Comment { UserName = "@NuthinButNet", Text = "Commenting", AvatarUrl = "user.png" };
 
@@ -41,5 +40,15 @@ public partial class CollectionViewGrouped : ContentPage
         };
 
         OnPropertyChanged(nameof(Comments));
+    }
+
+    public ICommand ShowRepliesCommand => new Command(ShowReplies);
+
+    void ShowReplies(object arg)
+    {
+        if (arg is CommentThread thread)
+        {
+            thread.ShowReplies();
+        }
     }
 }

@@ -41,10 +41,10 @@ public class CollectionViewCell : UICollectionViewCell
         ContentView.TrailingAnchor.ConstraintEqualTo(TrailingAnchor).Active = true;
 
         // And we want the ContentView to be the same size as the root renderer for the Forms element
-        ContentView.TopAnchor.ConstraintEqualTo(platformView.TopAnchor).Active = true;
-        ContentView.BottomAnchor.ConstraintEqualTo(platformView.BottomAnchor).Active = true;
-        ContentView.LeadingAnchor.ConstraintEqualTo(platformView.LeadingAnchor).Active = true;
-        ContentView.TrailingAnchor.ConstraintEqualTo(platformView.TrailingAnchor).Active = true;
+        ContentView.TopAnchor.ConstraintEqualTo(platformView.TopAnchor, -(float)_view.Margin.Top).Active = true;
+        ContentView.BottomAnchor.ConstraintEqualTo(platformView.BottomAnchor, (float)_view.Margin.Bottom).Active = true;
+        ContentView.LeadingAnchor.ConstraintEqualTo(platformView.LeadingAnchor, -(float)_view.Margin.Left).Active = true;
+        ContentView.TrailingAnchor.ConstraintEqualTo(platformView.TrailingAnchor, (float)_view.Margin.Right).Active = true;
     }
 
     public virtual void Bind(DataTemplate template, object data, CollectionView itemsView)
@@ -150,7 +150,7 @@ public class CollectionViewCell : UICollectionViewCell
     {
         _calculatedSize = CellSizeController.Measure(_view);
         var platformView = (UIView)_view.Handler.PlatformView;
-        platformView.Frame = new CGRect(CGPoint.Empty, _calculatedSize);
+        platformView.Frame = new CGRect(new CGPoint(_view.Margin.Left, _view.Margin.Top), new Size(_calculatedSize.Width - _view.Margin.HorizontalThickness, _calculatedSize.Height - _view.Margin.VerticalThickness));
 
         // Layout the Maui element 
         var nativeBounds = platformView.Frame.ToRectangle();
@@ -184,7 +184,7 @@ public class VerticalCellSizeController : CellSizeController
         {
             return new Size(ConstrainedDimension, 0);
         }
-        var d = view.Handler.GetDesiredSize(ConstrainedDimension, double.PositiveInfinity);
+        var d = view.Handler.GetDesiredSize(ConstrainedDimension - view.Margin.VerticalThickness, double.PositiveInfinity);
         return new Size(ConstrainedDimension, d.Height);
     }
 
@@ -207,7 +207,7 @@ public class HorizontaCellSizeController : CellSizeController
         {
             return new Size(0, ConstrainedDimension);
         }
-        var d = view.Handler.GetDesiredSize(double.PositiveInfinity, ConstrainedDimension);
+        var d = view.Handler.GetDesiredSize(double.PositiveInfinity, ConstrainedDimension - view.Margin.HorizontalThickness);
         return new Size(d.Width, ConstrainedDimension);
     }
 
@@ -241,4 +241,30 @@ public class CollectionViewFooter : CollectionViewCell
     public CollectionViewFooter(CGRect frame) : base(frame)
     {
     }
+
+    public override UICollectionViewLayoutAttributes PreferredLayoutAttributesFittingAttributes(UICollectionViewLayoutAttributes layoutAttributes)
+    {
+        var attrs = base.PreferredLayoutAttributesFittingAttributes(layoutAttributes);
+
+        ((CollectionViewHandler)_virtualView.Handler).Controller.SetFooterSize(attrs.Frame.Size);
+
+        return attrs;
+    }
+}
+
+public class CollectionViewSectionHeader : CollectionViewCell
+{
+    [Export("initWithFrame:")]
+    [Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
+    public CollectionViewSectionHeader(CGRect frame) : base(frame)
+    { }
+
+}
+public class CollectionViewSectionFooter : CollectionViewCell
+{
+    [Export("initWithFrame:")]
+    [Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
+    public CollectionViewSectionFooter(CGRect frame) : base(frame)
+    { }
+
 }

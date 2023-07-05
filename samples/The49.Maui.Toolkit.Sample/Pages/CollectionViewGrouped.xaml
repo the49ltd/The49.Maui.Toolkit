@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:the49="https://schemas.the49.com/dotnet/2023/maui"
@@ -24,9 +24,14 @@
         <the49:CollectionView.ItemsLayout>
             <LinearItemsLayout Orientation="Vertical" ItemSpacing="12" />
         </the49:CollectionView.ItemsLayout>
+        <the49:CollectionView.HeaderTemplate>
+            <DataTemplate>
+                <Label Text="Header" />
+            </DataTemplate>
+        </the49:CollectionView.HeaderTemplate>
         <the49:CollectionView.GroupHeaderTemplate>
             <DataTemplate x:DataType="models:CommentThread">
-                <views:CommentCard Comment="{Binding Comment}" />
+                <views:CommentCard Comment="{Binding Comment}" Command="{Binding ShowRepliesCommand, Source={x:Reference this}}" CommandParameter="{Binding .}" />
             </DataTemplate>
         </the49:CollectionView.GroupHeaderTemplate>
         <the49:CollectionView.ItemTemplate>

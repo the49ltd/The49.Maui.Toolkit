@@ -30,6 +30,7 @@ public class CollectionViewLayout : UICollectionViewCompositionalLayout
 
         var section = NSCollectionLayoutSection.Create(group);
         section.InterGroupSpacing = (float)itemsLayout.VerticalItemSpacing;
+
         var config = new UICollectionViewCompositionalLayoutConfiguration();
 
         config.BoundarySupplementaryItems = new NSCollectionLayoutBoundarySupplementaryItem[] { header };
@@ -53,20 +54,34 @@ public class CollectionViewLayout : UICollectionViewCompositionalLayout
         var groupSize = NSCollectionLayoutSize.Create(itemWidth, itemHeight);
         var group = NSCollectionLayoutGroup.CreateHorizontal(groupSize, item);
 
-
-        var headerSize = NSCollectionLayoutSize.Create(itemWidth, itemHeight);
-
-        var header = NSCollectionLayoutBoundarySupplementaryItem.Create(headerSize, UICollectionElementKindSectionKey.Header, itemsLayout.Orientation == ItemsLayoutOrientation.Vertical ? NSRectAlignment.Top : NSRectAlignment.Leading);
-
         var section = NSCollectionLayoutSection.Create(group);
 
         section.InterGroupSpacing = (float)itemsLayout.ItemSpacing;
+
+        var sectionHeaderSize = NSCollectionLayoutSize.Create(NSCollectionLayoutDimension.CreateFractionalWidth(1f), NSCollectionLayoutDimension.CreateEstimated(50f));
+
+        var sectionHeader = NSCollectionLayoutBoundarySupplementaryItem.Create(sectionHeaderSize, UICollectionElementKindSectionKey.Header, NSRectAlignment.Top);
+
+        var sectionFooterSize = NSCollectionLayoutSize.Create(NSCollectionLayoutDimension.CreateFractionalWidth(1f), NSCollectionLayoutDimension.CreateEstimated(50f));
+
+        var sectionFooter = NSCollectionLayoutBoundarySupplementaryItem.Create(sectionFooterSize, UICollectionElementKindSectionKey.Footer, NSRectAlignment.Bottom);
+
+        section.BoundarySupplementaryItems = new NSCollectionLayoutBoundarySupplementaryItem[] { sectionHeader, sectionFooter };
 
         var config = new UICollectionViewCompositionalLayoutConfiguration();
 
         config.ScrollDirection = itemsLayout.Orientation == ItemsLayoutOrientation.Vertical ? UICollectionViewScrollDirection.Vertical : UICollectionViewScrollDirection.Horizontal;
 
-        config.BoundarySupplementaryItems = new NSCollectionLayoutBoundarySupplementaryItem[] { header };
+
+        var headerSize = NSCollectionLayoutSize.Create(itemWidth, itemHeight);
+
+        var header = NSCollectionLayoutBoundarySupplementaryItem.Create(headerSize, UICollectionElementKindSectionKey.Header, itemsLayout.Orientation == ItemsLayoutOrientation.Vertical ? NSRectAlignment.Top : NSRectAlignment.Leading);
+
+        var footerSize = NSCollectionLayoutSize.Create(itemWidth, itemHeight);
+
+        var footer = NSCollectionLayoutBoundarySupplementaryItem.Create(footerSize, UICollectionElementKindSectionKey.Footer, itemsLayout.Orientation == ItemsLayoutOrientation.Vertical ? NSRectAlignment.Bottom : NSRectAlignment.Trailing);
+
+        config.BoundarySupplementaryItems = new NSCollectionLayoutBoundarySupplementaryItem[] { header, footer };
 
         var layout = new CollectionViewLayout(section);
 

@@ -10,7 +10,7 @@ public static class MauiAppBuilderExtensions
 #if IOS
         builder.ConfigureMauiHandlers(cfg =>
         {
-            cfg.AddHandler<CollectionView, The49.Maui.Toolkit.Handlers.CollectionViewHandler>();
+            cfg.AddHandler<The49.Maui.Toolkit.Views.CollectionView, The49.Maui.Toolkit.Handlers.CollectionViewHandler>();
         });
 #endif
         return builder;
