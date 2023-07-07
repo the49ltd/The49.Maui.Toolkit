@@ -6,7 +6,7 @@ using Microsoft.Maui.Platform;
 
 namespace The49.Maui.Toolkit.Extensions;
 
-internal static class ViewExtensions
+internal static class AndroidViewExtensions
 {
     internal static void UpdateRippleColor(this AView view, VisualElement visualElement)
     {
